@@ -4,13 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/app/login/actions";
 
 const NAV = [
-  { href: "/", label: "Explore" },
+  { href: "/", label: "Overview" },
+  { href: "/explore", label: "Explore" },
   { href: "/model", label: "Model" },
+  { href: "/docs", label: "Docs" },
 ];
 
 export default function Header() {
@@ -23,6 +26,8 @@ export default function Header() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  if (pathname === "/login") return null;
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -49,16 +54,23 @@ export default function Header() {
             ))}
           </nav>
         </div>
-        {mounted && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Toggle theme"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          >
-            {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            >
+              {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </Button>
+          )}
+          <form action={signOut}>
+            <Button variant="ghost" size="icon" type="submit" aria-label="Sign out" title="Sign out">
+              <LogOut className="size-4" />
+            </Button>
+          </form>
+        </div>
       </div>
     </header>
   );

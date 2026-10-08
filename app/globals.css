@@ -135,3 +135,61 @@
     @apply font-sans;
   }
 }
+
+/* Hero graph animations — a sonar PPI scope, used by HeroGraph.tsx. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+@keyframes sonar-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-sonar-sweep {
+  animation: sonar-sweep 6s linear infinite;
+}
+
+@keyframes sonar-ping {
+  0% {
+    r: 3.5px;
+    opacity: 0.9;
+  }
+  100% {
+    r: 16px;
+    opacity: 0;
+  }
+}
+
+.animate-sonar-ping {
+  animation: sonar-ping 2.4s ease-out infinite;
+}
+
+@keyframes label-flicker {
+  0%,
+  60% {
+    opacity: 0.2;
+  }
+  68% {
+    opacity: 0.85;
+  }
+  76% {
+    opacity: 0.2;
+  }
+}
+
+.animate-label-flicker {
+  animation: label-flicker 3.8s ease-in-out infinite;
+}

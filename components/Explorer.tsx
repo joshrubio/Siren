@@ -6,6 +6,7 @@ import { CLASS_LABEL, isCorrect, type Clip, type VesselClass } from "@/lib/clips
 import { cn } from "@/lib/utils";
 import ConfidenceBars from "@/components/ConfidenceBars";
 import Waveband from "@/components/Waveband";
+import InfoHint from "@/components/InfoHint";
 
 const CLASSES: VesselClass[] = ["cargo", "tanker", "passenger", "tug"];
 
@@ -43,9 +44,15 @@ export default function Explorer({ clips }: { clips: Clip[] }) {
           <div className="flex items-center gap-3 pt-1">
             <ToggleChip active={onlyTest} onClick={() => setOnlyTest((v) => !v)}>
               Held-out test only
+              <InfoHint>
+                Windows from recordings the model never saw during training — the only honest way
+                to measure accuracy. Turn this off to also see training windows (usually much more
+                confident, since the model has seen that exact vessel before).
+              </InfoHint>
             </ToggleChip>
             <ToggleChip active={onlyMisclassified} onClick={() => setOnlyMisclassified((v) => !v)}>
               Misclassified only
+              <InfoHint>Show only windows where the predicted class doesn&apos;t match the true class.</InfoHint>
             </ToggleChip>
           </div>
           <p className="font-mono text-[10px] text-muted-foreground">
@@ -113,15 +120,25 @@ function ClipDetail({ clip }: { clip: Clip }) {
         </p>
       </div>
 
-      <div className="border border-border/60">
-        <Image
-          src={clip.spectrogramPath}
-          alt={`Mel spectrogram of ${clip.id}`}
-          width={640}
-          height={256}
-          className="w-full h-auto"
-          unoptimized
-        />
+      <div>
+        <h3 className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-3">
+          Spectrogram
+          <InfoHint>
+            Time runs left to right, frequency runs bottom (low) to top (high), and brightness is
+            energy at that frequency/time. The magma colormap (dark → orange → yellow) is the
+            audio-analysis domain standard, not decoration.
+          </InfoHint>
+        </h3>
+        <div className="border border-border/60">
+          <Image
+            src={clip.spectrogramPath}
+            alt={`Mel spectrogram of ${clip.id}`}
+            width={640}
+            height={256}
+            className="w-full h-auto"
+            unoptimized
+          />
+        </div>
       </div>
 
       <audio controls src={clip.audioPath} className="w-full h-9" />
@@ -129,6 +146,11 @@ function ClipDetail({ clip }: { clip: Clip }) {
       <div>
         <h3 className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-3">
           Classifier confidence
+          <InfoHint>
+            The model&apos;s own output — one probability per class, always summing to 100%. The
+            ground-truth class is labeled; when it isn&apos;t the top bar, this window was
+            misclassified.
+          </InfoHint>
         </h3>
         <ConfidenceBars
           confidence={clip.confidence}
@@ -140,6 +162,10 @@ function ClipDetail({ clip }: { clip: Clip }) {
       <div>
         <h3 className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-3">
           Frequency-band energy
+          <InfoHint>
+            A coarser 3-band summary of the same spectrogram — useful for a quick read of whether
+            a sound is bass-heavy (most vessel engine noise) or has real high-frequency content.
+          </InfoHint>
         </h3>
         <Waveband bandEnergy={clip.bandEnergy} />
       </div>

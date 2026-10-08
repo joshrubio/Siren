@@ -1,5 +1,6 @@
 import { CLASS_LABEL, metrics } from "@/lib/clips";
 import ConfusionMatrix from "@/components/ConfusionMatrix";
+import InfoHint from "@/components/InfoHint";
 
 export default function ModelPage() {
   return (
@@ -33,6 +34,11 @@ export default function ModelPage() {
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-4">
             Per-class performance (held-out test set)
+            <InfoHint>
+              Precision: of the windows predicted as this class, how many actually were. Recall:
+              of the windows that actually are this class, how many got caught. F1 is their
+              balance — accuracy alone can look fine even when one class is never detected.
+            </InfoHint>
           </h2>
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -70,6 +76,11 @@ export default function ModelPage() {
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-4">
             Confusion matrix
+            <InfoHint>
+              Rows are the true class, columns are what the model predicted. The diagonal is
+              correct predictions; anything off-diagonal is a specific confusion — e.g. a real
+              Tanker window predicted as Cargo.
+            </InfoHint>
           </h2>
           <ConfusionMatrix classes={metrics.classes} matrix={metrics.confusionMatrix} />
         </div>
