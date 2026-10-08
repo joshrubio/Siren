@@ -4,6 +4,7 @@ import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -30,12 +31,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <Suspense fallback={<div className="h-12 border-b" />}>
             <Header />
           </Suspense>
           <div className="flex-1 min-h-0 flex flex-col">{children}</div>
+          <Suspense fallback={<div className="h-10 border-t" />}>
+            <Footer />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
