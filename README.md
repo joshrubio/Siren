@@ -1,60 +1,63 @@
 # Siren
 
-Named for the mythological sirens, known for their song — a fit for *acoustic* signatures. An
-interpretation layer over a real underwater vessel-noise classifier: spectrograms, per-class
-confidence, and a frequency-band breakdown for every window, plus an honest accounting of where
-the model works and where it doesn't. Built as a standalone portfolio project.
+![Siren](.github/readme/thumbnail.png)
 
-This project is deliberately **not** trying to be a underwater-acoustics ML project. It's the
-UX/interpretation layer on top of whatever a classifier like this outputs — the same discipline
-as [Janus](https://github.com/joshrubio/Janus)'s RAG assistant, applied to a different kind of
-model output.
+**An interpretation layer over a real underwater vessel-noise classifier.** Named for the sirens of myth, known for their song, a fit for *acoustic* signatures. Real recordings of ships, a real and imperfect model, and an interface that helps an analyst read each prediction: what the model heard, how sure it was, and where it tends to be wrong.
+
+Part of [Siegfried](https://github.com/joshrubio/Siegfried), a series of five satellite projects. Case study: [joshrubio.es/projects/siren](https://joshrubio.es/projects/siren)
+
+This is deliberately **not** a machine-learning research project. The model is a small, honest baseline; the work is the UX layer on top of whatever a classifier like this outputs.
+
+![Explorer](.github/readme/screen-explore.webp)
 
 ## What's real here
 
-- **Audio**: 24 real recordings from [DeepShip](https://github.com/irfankamboh/DeepShip) (Jalkanen
-  et al.), 6 per vessel class — Cargo, Tanker, Passenger, Tug — recorded in the Strait of Georgia,
-  2016-2018.
-- **Features**: MFCCs, delta-MFCCs, and spectral-shape descriptors (centroid, bandwidth, rolloff,
-  zero-crossing rate, contrast), extracted with `librosa`.
-- **Model**: an SVM (RBF kernel), chosen over Random Forest after comparing both on the held-out
-  test set. 56.6% test accuracy across 4 classes (vs. ~25% random) — a real number, not a
-  cherry-picked one.
-- **Evaluation**: the train/test split is done at the *recording* level, not the window level —
-  no recording contributes windows to both sides. Window-level random splits leak a vessel's
-  acoustic signature across the split and inflate accuracy; this project's split was designed
-  specifically to avoid that (see the `/model` page for why, and the
-  [UniqueShip paper](https://arxiv.org/abs/2609.13659) this mirrors in spirit).
+- **Audio**: 24 real recordings from [DeepShip](https://github.com/irfankamboh/DeepShip) (Jalkanen et al.), 6 per vessel class (Cargo, Tanker, Passenger, Tug), recorded in the Strait of Georgia, 2016-2018.
+- **Features**: mel spectrograms, MFCCs, delta-MFCCs and spectral-shape descriptors (centroid, bandwidth, rolloff, zero-crossing rate, contrast), extracted with `librosa`.
+- **Model**: an SVM (RBF kernel), kept over a Random Forest after comparing both on the held-out test set. **56.6% test accuracy** across 4 classes (vs. 25% by chance).
+- **Evaluation**: the train/test split is done per *recording*, not per window, so no recording contributes windows to both sides.
 
-Everything — spectrograms, classifier predictions, confidence scores, playback clips — is
-precomputed once by `scripts/preprocess.py` and shipped as static assets. No live inference, no
-database: the corpus is small enough that this is the right-sized choice, same reasoning as
-Janus's in-process RAG retrieval over a small doc set.
+## Pipeline
 
-## Stack
+![Pipeline](.github/readme/pipeline.png)
 
-Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind v4 · shadcn/ui (`@base-ui/react`)
-for the app; Python (`librosa`, `scikit-learn`) for the offline preprocessing pipeline.
+Everything (spectrograms, predictions, confidence scores, playback clips, metrics) is precomputed once by `scripts/preprocess.py` and shipped as static files: `lib/clips-index.json` (one row per window), `lib/metrics.json` and the images and clips in `public/`. No live inference and no database; the corpus is small enough that this is the right-sized choice.
+
+### Why the split happens per recording
+
+![Recording-level split](.github/readme/split.png)
+
+Windows cut from one recording share that vessel's acoustic signature. A random window split puts the same ship on both sides and inflates accuracy; splitting by recording gives a lower number that actually means something (the same concern the [UniqueShip paper](https://arxiv.org/abs/2609.13659) raises).
+
+## The app
+
+- **Explorer** (`/explore`): a master-detail view, filterable by class, held-out test windows only, or misclassified windows only. Each window shows its spectrogram (magma colormap, the field's convention), a player, per-class confidence and a frequency-band energy breakdown.
+- **Model** (`/model`): accuracy, per-class precision/recall/F1 and a confusion matrix. Tanker sits at 0% recall, and the page explains why (too little vessel variation in training) instead of hiding it.
+- **Docs** (`/docs`): what this is and isn't, and how the pipeline works.
+
+![Model page](.github/readme/screen-model.webp)
 
 ## Identity
 
-Benchmarked against real audio-analysis tool UIs (iZotope RX's spectral editor, sonar waterfall
-displays) rather than reskinned from Janus or Siegfried: near-black background, a cyan accent used
-only for functional signals, IBM Plex Sans/Mono, and a tighter instrument-panel radius —
-deliberately different register from Janus's warm serif/amber identity.
+Benchmarked against iZotope RX's spectral editor and sonar waterfall displays: a near-black background, a cyan accent used only for functional signals, IBM Plex Sans/Mono and a tight instrument-panel radius.
 
-## Running it locally
+## Running locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-To regenerate the spectrograms, clips, and classifier metrics from scratch (requires the raw audio
-under `data/raw/<class>/*.wav` — see `scripts/preprocess.py` for the DeepShip subset used):
+No API keys are needed. The login page is a demo gate.
+
+To regenerate the spectrograms, clips and metrics from scratch (requires the raw audio under `data/raw/<class>/*.wav`; see `scripts/preprocess.py` for the DeepShip subset used):
 
 ```bash
 python -m venv .venv
 .venv/Scripts/pip install librosa scikit-learn numpy soundfile pillow matplotlib
 .venv/Scripts/python scripts/preprocess.py
 ```
+
+## Stack
+
+Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · shadcn/ui (`@base-ui/react`) for the app; Python (`librosa`, `scikit-learn`) for the offline pipeline.
